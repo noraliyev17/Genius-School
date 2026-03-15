@@ -58,8 +58,8 @@ bot.on("callback_query", async (query) => {
   const courseList = courses.map(course =>
     `📌 ${course.name}
 ⏱ ${course.duration}
-📞: <a href="https://t.me/Rushana_Teacher  ">Aloqa</a>
-💰 ${course.price}`  
+💬: <a href="https://t.me/Rushana_Teacher  ">Aloqa</a>
+📞 ${course.nomer}`  
   ).join("\n\n");
 
   return bot.editMessageText(
