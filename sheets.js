@@ -1,8 +1,11 @@
 const { google } = require("googleapis");
 const keys = require("./credentials.json");
-
+const privateKey = process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n');
 const auth = new google.auth.GoogleAuth({
-  credentials: keys,
+  credentials: {
+    client_email: process.env.GOOGLE_CLIENT_EMAIL,
+    private_key: privateKey
+  },
   scopes: ["https://www.googleapis.com/auth/spreadsheets"]
 });
 
