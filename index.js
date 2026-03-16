@@ -4,8 +4,7 @@ const courses = require("./courses");
 const saveToGoogleSheets = require("./sheets");
 const fs = require("fs");
 const path = require("path");
-const { validateName } = require("./validation");
-
+const { validateName, validatePhone } = require("./validation");
 const bot = new TelegramBot(process.env.BOT_TOKEN, { polling: true });
 
 console.log("✅ Bot ishga tushdi...");
@@ -55,28 +54,28 @@ bot.on("callback_query", async (query) => {
     }
 
     // 📚 KURSLAR
-    if (data === "courses") {
-      const courseList = courses.map(course =>
-        `📌 ${course.name}
+   if (data === "courses") {
+  const courseList = courses.map(course =>
+    `📌 ${course.name}
 ⏱ ${course.duration}
-💬: <a href="https://t.me/Rushana_Teacher">Aloqa</a>
-📞 ${course.nomer}`
-      ).join("\n\n");
+💬: <a href="https://t.me/Rushana_Teacher  ">Aloqa</a>
+📞 ${course.nomer}`  
+  ).join("\n\n");
 
-      return bot.editMessageText(
-        `📚 Bizning kurslar:\n\n${courseList}`,
-        {
-          chat_id: chatId,
-          message_id: messageId,
-          parse_mode: "HTML",
-          reply_markup: {
-            inline_keyboard: [
-              [{ text: "🔙 Orqaga", callback_data: "back" }]
-            ]
-          }
-        }
-      );
+  return bot.editMessageText(
+    `📚 Bizning kurslar:\n\n${courseList}`,
+    {
+      chat_id: chatId,
+      message_id: messageId,
+      parse_mode: "HTML",   // 👈 MUHIM
+      reply_markup: {
+        inline_keyboard: [
+          [{ text: "🔙 Orqaga", callback_data: "back" }]
+        ]
+      }
     }
+  );
+}
 
     // 📞 ALOQA
     if (data === "contact") {
@@ -113,7 +112,6 @@ bot.on("callback_query", async (query) => {
 // 🔹 MESSAGE HANDLER
 // =======================
 bot.on("message", async (msg) => {
-
   const chatId = msg.chat.id;
 
   if (!userState[chatId]) return;
@@ -122,38 +120,19 @@ bot.on("message", async (msg) => {
 
     // 1️⃣ ISM
     if (userState[chatId].step === "name") {
-
-      if (!validateName(msg.text)) {
-        return bot.sendMessage(chatId, "❌ Ism noto‘g‘ri. Qayta kiriting:");
-      }
-
       userState[chatId].name = msg.text;
       userState[chatId].step = "phone";
-
-      return bot.sendMessage(chatId, "📱 Telefon raqamingizni yuboring:", {
-        reply_markup: {
-          keyboard: [
-            [
-              {
-                text: "📱 Raqamni yuborish",
-                request_contact: true
-              }
-            ]
-          ],
-          resize_keyboard: true,
-          one_time_keyboard: true
-        }
-      });
+        
+      return bot.sendMessage(chatId, "📞 Telefon raqamingizni kiriting:");
     }
 
-    // 2️⃣ CONTACT ORQALI TELEFON
-    if (userState[chatId].step === "phone" && msg.contact) {
-
-      const phone = msg.contact.phone_number;
+    // 2️⃣ TELEFON
+    if (userState[chatId].step === "phone") {
+      userState[chatId].phone = msg.text;
 
       await saveToGoogleSheets(
         userState[chatId].name,
-        phone,
+        userState[chatId].phone,
         msg.from.username || ""
       );
 
@@ -161,7 +140,6 @@ bot.on("message", async (msg) => {
 
       return bot.sendMessage(chatId, "✅ Ro‘yxatdan muvaffaqiyatli o‘tdingiz!", {
         reply_markup: {
-          remove_keyboard: true,
           inline_keyboard: [
             [{ text: "🏠 Asosiy menu", callback_data: "back" }]
           ]
@@ -173,5 +151,4 @@ bot.on("message", async (msg) => {
     console.log("❌ Message error:", error.message);
     bot.sendMessage(chatId, "❌ Saqlashda xatolik yuz berdi.");
   }
-
 });
